@@ -46,5 +46,6 @@ private:
     int m_totalFiles = 0;
     int m_processedFiles = 0;
     bool m_isSingleFileMode = false;
+    QMap<QString, QString> m_models;
 };
 #endif // MAINWINDOW_H

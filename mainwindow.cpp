@@ -17,11 +17,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setAcceptDrops(true); // Enable Drag and Drop
 
+    // --- Initialize Models ---
+    m_models.insert("Anime", "realesrgan-x4plus-anime");
+    m_models.insert("Real World", "realesrgan-x4plus");
+
+
     // --- Initialize UI ---
     ui->scaleComboBox->addItems({"2", "3", "4"});
     ui->scaleComboBox->setCurrentText("4");
     ui->formatComboBox->addItems({"png", "jpg", "webp"});
     ui->formatComboBox->setCurrentText("png");
+    ui->modeComboBox->addItems(m_models.keys());
+    ui->modeComboBox->setCurrentText("Anime");
     ui->advancedGroup->setVisible(false);
     ui->progressBar->setVisible(false);
 
@@ -197,6 +204,7 @@ void MainWindow::startUpscaling()
     // --- Basic Settings ---
     args << "-s" << ui->scaleComboBox->currentText();
     args << "-f" << ui->formatComboBox->currentText();
+    args << "-n" << m_models.value(ui->modeComboBox->currentText());
 
     // --- Advanced Settings ---
     if (!ui->threadsLineEdit->text().isEmpty()) {
