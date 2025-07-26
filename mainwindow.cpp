@@ -84,27 +84,34 @@ void MainWindow::on_startButton_clicked()
 
 void MainWindow::onProcessReadyReadStandardError()
 {
-    // It's better to read line by line to avoid partial messages
-    while (m_process->canReadLine()) {
-        QString line = QString::fromLocal8Bit(m_process->readLine());
-        qDebug() << "stderr line:" << line.trimmed(); // For debugging
+    // Read all available data from stderr. This is more robust against buffering issues.
+    QString data = QString::fromLocal8Bit(m_process->readAllStandardError());
+    qDebug() << "stderr chunk:" << data; // For debugging
 
-        if (m_isSingleFileMode) {
-            QRegularExpression re("(\\d+\\.\\d+)%");
-            // Use search() instead of match() as the percentage might not be at the start of the line
-            QRegularExpressionMatch match = re.match(line);
-            if (match.hasMatch()) {
-                float progress = match.captured(1).toFloat();
-                ui->progressBar->setValue(static_cast<int>(progress));
-            }
-        } else {
-            // For directory mode, we look for the "done" message
-            if (line.contains("->") && line.contains("done")) {
-                m_processedFiles++;
-                int progress = (m_totalFiles > 0) ? (m_processedFiles * 100) / m_totalFiles : 0;
-                ui->progressBar->setValue(progress);
-                ui->progressBar->setFormat(tr("Processing %1/%2...").arg(m_processedFiles).arg(m_totalFiles));
-            }
+    if (m_isSingleFileMode) {
+        // In single file mode, find the last percentage value in the output chunk.
+        QRegularExpression re("(\\d+\\.\\d+)%");
+        QRegularExpressionMatchIterator i = re.globalMatch(data);
+        QRegularExpressionMatch lastMatch;
+        while (i.hasNext()) {
+            lastMatch = i.next();
+        }
+
+        if (lastMatch.hasMatch()) {
+            float progress = lastMatch.captured(1).toFloat();
+            ui->progressBar->setValue(static_cast<int>(progress));
+        }
+    } else {
+        // In directory mode, count the number of completed files in the chunk.
+        // The "done" message is a reliable indicator of a finished file.
+        int completedInChunk = data.count("done");
+        if (completedInChunk > 0) {
+            m_processedFiles += completedInChunk;
+            int progress = (m_totalFiles > 0) ? (m_processedFiles * 100) / m_totalFiles : 0;
+            // Clamp progress to 100, just in case.
+            if (progress > 100) progress = 100;
+            ui->progressBar->setValue(progress);
+            ui->progressBar->setFormat(tr("Processing %1/%2...").arg(m_processedFiles).arg(m_totalFiles));
         }
     }
 }

@@ -1,0 +1,16 @@
+[Desktop Entry]
+
+Type=Service
+
+MimeType=image/*;inode/directory;
+
+X-Kde-Submenu=Utilities
+Icon=view-preview
+
+Actions=upscaleWithNeko
+
+[Desktop Action upscaleWithNeko]
+
+Name=Upscale images...
+Icon=view-preview
+Exec=neko-upscale %f
