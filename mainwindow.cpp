@@ -77,15 +77,27 @@ void MainWindow::on_startButton_clicked()
 
 void MainWindow::onProcessReadyReadStandardError()
 {
-    QString data = QString::fromLocal8Bit(m_process->readAllStandardError());
-    qDebug() << data; // For debugging
+    // It's better to read line by line to avoid partial messages
+    while (m_process->canReadLine()) {
+        QString line = QString::fromLocal8Bit(m_process->readLine());
+        qDebug() << "stderr line:" << line.trimmed(); // For debugging
 
-    if (m_isSingleFileMode) {
-        QRegularExpression re("(\\d+\\.\\d+)%");
-        QRegularExpressionMatch match = re.match(data);
-        if (match.hasMatch()) {
-            int progress = match.captured(1).toFloat();
-            ui->progressBar->setValue(progress);
+        if (m_isSingleFileMode) {
+            QRegularExpression re("(\\d+\\.\\d+)%");
+            // Use search() instead of match() as the percentage might not be at the start of the line
+            QRegularExpressionMatch match = re.match(line);
+            if (match.hasMatch()) {
+                float progress = match.captured(1).toFloat();
+                ui->progressBar->setValue(static_cast<int>(progress));
+            }
+        } else {
+            // For directory mode, we look for the "done" message
+            if (line.contains("->") && line.contains("done")) {
+                m_processedFiles++;
+                int progress = (m_totalFiles > 0) ? (m_processedFiles * 100) / m_totalFiles : 0;
+                ui->progressBar->setValue(progress);
+                ui->progressBar->setFormat(tr("Processing %1/%2...").arg(m_processedFiles).arg(m_totalFiles));
+            }
         }
     }
 }
@@ -93,22 +105,28 @@ void MainWindow::onProcessReadyReadStandardError()
 void MainWindow::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     qDebug() << "Process finished with exit code:" << exitCode;
+    updateUiForProcessing(false);
 
     if (exitStatus == QProcess::NormalExit && exitCode == 0) {
         if (!m_isSingleFileMode) {
-            m_processedFiles = m_totalFiles; // Mark all as done
+            // Ensure the progress bar shows 100% on completion
+            m_processedFiles = m_totalFiles;
             ui->progressBar->setValue(100);
             ui->progressBar->setFormat(tr("Completed %1/%2").arg(m_processedFiles).arg(m_totalFiles));
+        } else {
+            ui->progressBar->setValue(100);
         }
-         ui->statusbar->showMessage(tr("Upscaling finished successfully!"), 5000);
+
+        QMessageBox::information(this, tr("Success"), tr("Upscaling finished successfully!"));
+        QApplication::quit(); // Exit the application
+
     } else {
         QString errorMsg = m_process->readAllStandardError();
         QMessageBox::critical(this, tr("Error"), tr("An error occurred during upscaling:\n%1").arg(errorMsg));
         ui->statusbar->showMessage(tr("Upscaling failed."), 5000);
     }
-
-    updateUiForProcessing(false);
 }
+
 
 
 void MainWindow::processPath(const QString &path)
