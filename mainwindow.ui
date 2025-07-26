@@ -26,11 +26,14 @@
       <property name="title">
        <string>Input</string>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QLabel" name="inputPathLabel">
          <property name="text">
-          <string>Please select a file or directory...</string>
+          <string>Drag &amp; Drop a file/folder here or select one below.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -38,11 +41,35 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="browseInputButton">
-         <property name="text">
-          <string>Browse...</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="browseFileButton">
+           <property name="text">
+            <string>File...</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="browseFolderButton">
+           <property name="text">
+            <string>Folder...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

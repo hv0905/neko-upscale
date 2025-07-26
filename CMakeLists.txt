@@ -13,11 +13,11 @@ qt_add_executable(neko-upscale
     mainwindow.ui
 )
 
-target_link_libraries(neko-upscale
-    PRIVATE
-        Qt::Core
-        Qt::Widgets
-)
+target_link_libraries(neko-upscale PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui)
+
+# Install the executable
+install(TARGETS neko-upscale DESTINATION bin)
+
 
 include(GNUInstallDirs)
 

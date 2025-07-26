@@ -20,12 +20,17 @@ public:
     void setInputPath(const QString &path);
 
 private slots:
-    void on_browseInputButton_clicked();
+    void on_browseFileButton_clicked();
+    void on_browseFolderButton_clicked();
     void on_browseOutputButton_clicked();
     void on_advancedSettingsButton_toggled(bool checked);
     void on_startButton_clicked();
     void onProcessReadyReadStandardError();
     void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
 
 private:

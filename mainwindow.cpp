@@ -6,12 +6,16 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 
+#include <QDragEnterEvent>
+#include <QMimeData>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_process(new QProcess(this))
 {
     ui->setupUi(this);
+    setAcceptDrops(true); // Enable Drag and Drop
 
     // --- Initialize UI ---
     ui->scaleComboBox->addItems({"2", "3", "4"});
@@ -39,16 +43,19 @@ void MainWindow::setInputPath(const QString &path)
     }
 }
 
-void MainWindow::on_browseInputButton_clicked()
+void MainWindow::on_browseFileButton_clicked()
 {
-    // In a real scenario, we might want to remember the last path
-    QString path = QFileDialog::getOpenFileName(this, tr("Select Image or Directory"), "", tr("Images (*.png *.jpg *.jpeg *.webp);;All Files (*)"));
-    if (path.isEmpty()) {
-         path = QFileDialog::getExistingDirectory(this, tr("Select Directory"));
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Select Image File"), "", tr("Images (*.png *.jpg *.jpeg *.webp)"));
+    if (!filePath.isEmpty()) {
+        processPath(filePath);
     }
+}
 
-    if (!path.isEmpty()) {
-        processPath(path);
+void MainWindow::on_browseFolderButton_clicked()
+{
+    QString dirPath = QFileDialog::getExistingDirectory(this, tr("Select Folder"));
+    if (!dirPath.isEmpty()) {
+        processPath(dirPath);
     }
 }
 
@@ -209,14 +216,41 @@ void MainWindow::updateUiForProcessing(bool isProcessing)
     ui->settingsGroup->setEnabled(!isProcessing);
     ui->advancedSettingsButton->setEnabled(!isProcessing);
     ui->advancedGroup->setEnabled(!isProcessing);
-    ui->browseInputButton->setEnabled(!isProcessing);
+    ui->browseFileButton->setEnabled(!isProcessing);
+    ui->browseFolderButton->setEnabled(!isProcessing);
     ui->startButton->setEnabled(!isProcessing);
     ui->progressBar->setVisible(isProcessing);
 
     if (!isProcessing) {
        ui->progressBar->setValue(0);
+       // Reset label to default after processing
+       ui->inputPathLabel->setText(tr("Drag & Drop a file/folder here or select one below."));
     }
 }
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    // We only accept files by URL
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    const QMimeData *mimeData = event->mimeData();
+    if (mimeData->hasUrls()) {
+        QList<QUrl> urlList = mimeData->urls();
+        if (!urlList.isEmpty()) {
+            // We only process the first dropped item
+            QString path = urlList.first().toLocalFile();
+            if (!path.isEmpty()) {
+                processPath(path);
+            }
+        }
+    }
+}
+
 
 QString MainWindow::getOutputName(const QFileInfo& info, int scale)
 {
