@@ -19,17 +19,17 @@ target_link_libraries(neko-upscale PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui)
 install(TARGETS neko-upscale DESTINATION bin)
 
 
-include(GNUInstallDirs)
+# include(GNUInstallDirs)
 
-install(TARGETS neko-upscale
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+# install(TARGETS neko-upscale
+#     BUNDLE  DESTINATION .
+#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+# )
 
-qt_generate_deploy_app_script(
-    TARGET neko-upscale
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
+# qt_generate_deploy_app_script(
+#     TARGET neko-upscale
+#     OUTPUT_SCRIPT deploy_script
+#     NO_UNSUPPORTED_PLATFORM_ERROR
+# )
+# install(SCRIPT ${deploy_script})
