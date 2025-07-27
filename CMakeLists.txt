@@ -18,6 +18,12 @@ target_link_libraries(neko-upscale PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui)
 # Install the executable
 install(TARGETS neko-upscale DESTINATION bin)
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+    install(FILES ${CMAKE_SOURCE_DIR}/platforms/linux/neko-upscale.desktop DESTINATION share/kio/servicemenus)
+
+endif ()
+
 
 # include(GNUInstallDirs)
 
